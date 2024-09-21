@@ -4,12 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "ts-node ./src/scripts/build.ts",
-    "test":  "node --no-deprecation node_modules/.bin/jest",
-    "deploy:testnet": "TESTNET=true yarn build && ts-node ./src/scripts/deploy.ts",
-    "deploy:mainnet": "yarn compile && ts-node ./scripts/deploy.ts",
-    "onchaintest:testnet": "TESTNET=true ts-node ./src/scripts/onchaintest.ts",
-    "onchaintest:mainnet": "ts-node ./scripts/deploy.ts"
+    "test": "node --no-deprecation node_modules/.bin/jest",
+    "onchaintest:testnet": "TESTNET=true ts-node ./scripts/onchaintest.ts"
   },
   "devDependencies": {
     "@swc/core": "^1.7.26",
