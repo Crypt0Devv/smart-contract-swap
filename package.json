@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "test": "node --no-deprecation node_modules/.bin/jest",
-    "onchaintest:testnet": "TESTNET=true ts-node ./scripts/onchaintest.ts"
+    "onchaintest:testnet:withdraw": "TESTNET=true ts-node ./scripts/onchaintest-withdraw.ts",
+    "onchaintest:testnet:deposit": "TESTNET=true ts-node ./scripts/onchaintest-deposit.ts",
+    "onchaintest:testnet:changeadmin": "TESTNET=true ts-node ./scripts/onchaintest-changeadmin.ts"
   },
   "devDependencies": {
     "@swc/core": "^1.7.26",

@@ -8,6 +8,7 @@ import {
   Sender,
   SendMode,
 } from 'ton-core';
+import { op } from '../utils/constants';
 
 export type MainContractConfig = {
   address: Address;
@@ -49,7 +50,7 @@ export class MainContract implements Contract {
 
   async sendDeposit(provider: ContractProvider, sender: Sender, value: bigint) {
     const msg_body = beginCell()
-      .storeUint(0x47d54391, 32) // OP code
+      .storeUint(op.deposit, 32) // OP code
       .endCell();
 
     await provider.internal(sender, {
@@ -80,8 +81,26 @@ export class MainContract implements Contract {
     amount: bigint
   ) {
     const msg_body = beginCell()
-      .storeUint(0x41836980, 32) // OP code
+      .storeUint(op.withdraw, 32) // OP code
       .storeCoins(amount)
+      .endCell();
+
+    await provider.internal(sender, {
+      value,
+      sendMode: SendMode.PAY_GAS_SEPARATELY,
+      body: msg_body,
+    });
+  }
+
+  async sendChangeAdminRequest(
+    provider: ContractProvider,
+    sender: Sender,
+    value: bigint,
+    newAdminAddress: Address
+  ) {
+    const msg_body = beginCell()
+      .storeUint(op.changeAdmin, 32)
+      .storeAddress(newAdminAddress)
       .endCell();
 
     await provider.internal(sender, {

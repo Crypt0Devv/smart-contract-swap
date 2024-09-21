@@ -28,14 +28,13 @@ const const::min_tons_for_storage = 10000000; ;; 0.01 TON
     int op = in_msg_body~load_uint(32);
     (slice recent_sender, slice owner_address) = load_data();
 
-    ;; Deposit
-    if (op == op::deposit()) {
+    if (op == op::deposit()) { ;; deposit
         save_data(sender_address, owner_address);
         return();
     }
 
-    if (op == op::withdraw()) {
-        throw_unless(103, equal_slice_bits(sender_address, owner_address));
+    if (op == op::withdraw()) { ;; withdraw
+        throw_unless(403, equal_slice_bits(sender_address, owner_address));
         int withdraw_amount = in_msg_body~load_coins();
         var [balance, _] = get_balance();
         throw_unless(104, balance >= withdraw_amount);
@@ -53,6 +52,13 @@ const const::min_tons_for_storage = 10000000; ;; 0.01 TON
         send_raw_message(msg.end_cell(), msg_mode);
 
         return();
+    }
+
+    if (op == op::change_admin()) { ;; change admin
+        throw_unless(403, equal_slice_bits(sender_address, owner_address));
+        slice new_admin_address = in_msg_body~load_msg_addr();
+        save_data(sender_address, new_admin_address);
+        return ();
     }
 
     throw(777);

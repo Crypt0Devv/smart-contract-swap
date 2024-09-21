@@ -73,6 +73,7 @@ describe('main.fc contract tests', () => {
 
     expect(balanceRequest.number).toBeGreaterThan(toNano('4.99'));
   });
+
   it('should return deposit funds as no command is sent', async () => {
     const senderWallet = await blockchain.treasury('sender');
 
@@ -91,6 +92,7 @@ describe('main.fc contract tests', () => {
 
     expect(balanceRequest.number).toBe(0);
   });
+
   it('successfully withdraws funds on behalf of owner', async () => {
     const senderWallet = await blockchain.treasury('sender');
     await myContract.sendDeposit(senderWallet.getSender(), toNano('5'));
@@ -108,6 +110,7 @@ describe('main.fc contract tests', () => {
       value: toNano(1),
     });
   });
+
   it('fails to withdraw funds on behalf of not-owner', async () => {
     const senderWallet = await blockchain.treasury('sender');
 
@@ -123,9 +126,10 @@ describe('main.fc contract tests', () => {
       from: senderWallet.address,
       to: myContract.address,
       success: false,
-      exitCode: 103,
+      exitCode: 403,
     });
   });
+
   it('fails to withdraw funds because lack of balance', async () => {
     const withdrawalRequestResult = await myContract.sendWithdrawalRequest(
       ownerWallet.getSender(),
@@ -139,5 +143,44 @@ describe('main.fc contract tests', () => {
       success: false,
       exitCode: 104,
     });
+  });
+
+  it('succeeds to change admin address when requested by owner ', async () => {
+    const newAdmin = await blockchain.treasury('sender');
+    console.log('newAdmin.address', newAdmin.address);
+    console.log('ownerWallet.address', ownerWallet.address);
+
+    const withdrawalRequestResult = await myContract.sendChangeAdminRequest(
+      ownerWallet.getSender(),
+      toNano('0.5'),
+      newAdmin.address
+    );
+
+    expect(withdrawalRequestResult.transactions).toHaveTransaction({
+      from: ownerWallet.address,
+      to: myContract.address,
+      success: true,
+    });
+
+    const data = await myContract.getData();
+    expect(data.owner_address.toString()).toBe(newAdmin.address.toString());
+  });
+
+  it('fails to change admin address when requested by not owner', async () => {
+    const newAdmin = await blockchain.treasury('sender');
+    const withdrawalRequestResult = await myContract.sendChangeAdminRequest(
+      newAdmin.getSender(),
+      toNano('0.5'),
+      newAdmin.address
+    );
+
+    expect(withdrawalRequestResult.transactions).toHaveTransaction({
+      from: newAdmin.address,
+      to: myContract.address,
+      success: false,
+    });
+
+    const data = await myContract.getData();
+    expect(data.owner_address.toString()).toBe(ownerWallet.address.toString());
   });
 });

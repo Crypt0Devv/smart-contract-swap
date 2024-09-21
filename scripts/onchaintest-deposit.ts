@@ -4,9 +4,10 @@ import { TonClient4 } from 'ton';
 import qs from 'qs';
 import qrcode from 'qrcode-terminal';
 import dotenv from 'dotenv';
+import { op } from '../utils/constants';
 dotenv.config();
 const contractAddress = Address.parse(
-  'EQDS_VZ9nI-R00p2tjqulwNxaJafaQAm-YG44Qn4yP3sTugl'
+  'EQBv-Ka-2oXJWatRVp5oCNzdegOXuABjToVnsgQ_LUbMMsFF'
 );
 export async function testDeposit() {
   const endpoint = await getHttpV4Endpoint({
@@ -28,8 +29,7 @@ export async function testDeposit() {
 
   console.log('Testing deposit functionality...');
   const depositAmount = toNano(0.1);
-  const DEPOSIT_OP = 0x47d54391;
-  const payload = beginCell().storeUint(DEPOSIT_OP, 32).endCell();
+  const payload = beginCell().storeUint(op.deposit, 32).endCell();
   const encodedPayload = payload.toBoc().toString('base64');
   const depositLink = `https://tonhub.com/transfer/${contractAddress.toString({
     testOnly: process.env.TESTNET ? true : false,
@@ -46,35 +46,4 @@ export async function testDeposit() {
   });
 }
 
-async function testWithdraw() {
-  const withdrawAmount = toNano(0.05); // 0.05 TON
-  const WITHDRAW_OP = 0x41836980; // Replace with your actual withdraw op code
-
-  const payload = beginCell()
-    .storeUint(WITHDRAW_OP, 32)
-    .storeCoins(withdrawAmount)
-    .endCell();
-
-  const encodedPayload = payload.toBoc().toString('base64');
-
-  const withdrawLink = `https://tonhub.com/transfer/${contractAddress.toString({
-    testOnly: process.env.TESTNET === 'true',
-  })}?${qs.stringify({
-    text: 'Withdraw test',
-    amount: '10000000', // 0.01 TON for gas fees
-    bin: encodedPayload,
-  })}`;
-
-  console.log('Scan this QR code to initiate withdrawal:');
-  qrcode.generate(withdrawLink, { small: true }, (code) => {
-    console.log(code);
-  });
-
-  console.log('URL:', withdrawLink);
-  console.log(
-    'After scanning, check the contract state to confirm the withdrawal.'
-  );
-}
-// testWithdraw();
-
-// testDeposit();
+testDeposit();
