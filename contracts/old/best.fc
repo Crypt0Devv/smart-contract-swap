@@ -1,0 +1,186 @@
+#include "../../imports/stdlib.fc";
+
+;; Constants
+const STONFI_ROUTER_ADDRESS = "EQCjk1hh952vWaE9bRguFkAhDAL5jj3xj9p0uPWrFBq_GEMS"c; ;; DeDust main contract address
+const SWAP_OP = 0x595f07bc; ;; DeDust swap opcode (verify this)
+
+;; Storage structure: (owner_address, balance)
+
+() recv_internal(int msg_value, cell in_msg, slice in_msg_body) impure {
+    slice cs = in_msg.begin_parse();
+    int flags = cs~load_uint(4);
+    
+    if (flags & 1) { ;; Handle bounced messages (failed swaps)
+        (slice owner_address, int balance, cell ongoing_swap) = load_data();
+        if (ongoing_swap.begin_parse().preload_uint(1) == 1) {
+            retry_swap();
+        }
+        return ();
+    }
+
+    slice sender_address = cs~load_msg_addr();
+    
+    if (in_msg_body.slice_empty?()) { ;; Simple transfer without op
+        (slice owner_address, int balance, cell ongoing_swap) = load_data();
+        balance += msg_value;
+        save_data(owner_address, balance, ongoing_swap);
+        return ();
+    }
+
+    int op = in_msg_body~load_uint(32);
+
+    if (op == 1) { ;; Swap operation
+        (slice owner_address, int balance, cell ongoing_swap) = load_data();
+        throw_unless(401, equal_slices(sender_address, owner_address));
+        throw_if(402, ongoing_swap.begin_parse().preload_uint(1) == 1); ;; Ensure no ongoing swap
+
+        int amount_in = in_msg_body~load_coins();
+        slice token_in = in_msg_body~load_msg_addr();
+        slice token_out = in_msg_body~load_msg_addr();
+        int min_amount_out = in_msg_body~load_coins();
+
+        throw_unless(403, balance >= amount_in);
+        balance -= amount_in;
+
+        cell new_ongoing_swap = begin_cell()
+            .store_uint(1, 1)
+            .store_coins(amount_in)
+            .store_slice(token_in)
+            .store_slice(token_out)
+            .store_coins(min_amount_out)
+            .store_uint(0, 8) ;; retry_count
+            .end_cell();
+
+        save_data(owner_address, balance, new_ongoing_swap);
+        send_swap_request(amount_in, token_in, token_out, min_amount_out, owner_address);
+        return ();
+    }
+    
+    if (op == 2) { ;; Deposit operation
+        (slice owner_address, int balance) = load_data();
+        balance += msg_value;
+        save_data(owner_address, balance);
+        return ();
+    }
+
+    if (op == 3) { ;; Withdraw operation
+        (slice owner_address, int balance) = load_data();
+        throw_unless(401, equal_slices(sender_address, owner_address));
+        
+        int withdraw_amount = in_msg_body~load_coins();
+        throw_unless(402, balance >= withdraw_amount);
+
+        balance -= withdraw_amount;
+        save_data(owner_address, balance);
+
+        var msg = begin_cell()
+            .store_uint(0x10, 6) ;; nobounce
+            .store_slice(owner_address)
+            .store_coins(withdraw_amount)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+            .end_cell();
+        send_raw_message(msg, 1); ;; pay transfer fees separately
+        return ();
+    }
+    if (op == 3) {
+        throw_unless(103, equal_slice_bits(sender_address, owner_address));
+
+        int withdraw_amount = in_msg_body~load_coins();
+        var [balance, _] = get_balance();
+        throw_unless(104, balance >= withdraw_amount);
+
+        int return_value = min(withdraw_amount, balance - const::min_tons_for_storage);
+
+        int msg_mode = 1; ;; 0 (Ordinary message) + 1 (Pay transfer fees separately from the message value)
+
+        var msg = begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(sender_address)
+            .store_coins(return_value)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1);
+
+        send_raw_message(msg.end_cell(), msg_mode);
+
+        return();
+    }
+    throw(0xffff); ;; If the op is unknown
+}
+
+(slice, int) load_data() inline {
+    slice ds = get_data().begin_parse();
+    return (ds~load_msg_addr(), ds~load_coins());
+}
+
+() save_data(slice owner_address, int balance) impure inline {
+    set_data(begin_cell()
+        .store_slice(owner_address)
+        .store_coins(balance)
+        .end_cell());
+}
+
+int get_balance() method_id {
+    (_, int balance) = load_data();
+    return balance;
+}
+
+slice get_owner() method_id {
+    (slice owner_address, _) = load_data();
+    return owner_address;
+}
+
+
+() send_swap_request(int amount_in, slice token_in, slice token_out, int min_amount_out, slice recipient) impure {
+    cell swap_payload = begin_cell()
+        .store_uint(SWAP_OP, 32)
+        .store_uint(0, 64)  ;; query_id
+        .store_coins(amount_in)
+        .store_slice(token_in)
+        .store_slice(token_out)
+        .store_coins(min_amount_out)
+        .store_slice(recipient)
+        .end_cell();
+
+    var msg = begin_cell()
+        .store_uint(0x18, 6)  ;; bounce
+        .store_slice(STONFI_ROUTER_ADDRESS)
+        .store_coins(amount_in)
+        .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+        .store_ref(swap_payload)
+        .end_cell();
+
+    send_raw_message(msg, 1); ;; pay transfer fees separately
+}
+
+() retry_swap() impure {
+    (slice owner_address, int balance, cell ongoing_swap) = load_data();
+    slice swap_data = ongoing_swap.begin_parse();
+    
+    int is_ongoing = swap_data~load_uint(1);
+    throw_unless(501, is_ongoing);
+
+    int amount_in = swap_data~load_coins();
+    slice token_in = swap_data~load_msg_addr();
+    slice token_out = swap_data~load_msg_addr();
+    int min_amount_out = swap_data~load_coins();
+    int retry_count = swap_data~load_uint(8);
+
+    retry_count += 1;
+    if (retry_count > MAX_RETRIES) {
+        ;; Max retries reached, refund the amount
+        balance += amount_in;
+        save_data(owner_address, balance, begin_cell().store_uint(0, 1).end_cell());
+        return ();
+    }
+
+    cell new_ongoing_swap = begin_cell()
+        .store_uint(1, 1)
+        .store_coins(amount_in)
+        .store_slice(token_in)
+        .store_slice(token_out)
+        .store_coins(min_amount_out)
+        .store_uint(retry_count, 8)
+        .end_cell();
+
+    save_data(owner_address, balance, new_ongoing_swap);
+    send_swap_request(amount_in, token_in, token_out, min_amount_out, owner_address);
+}

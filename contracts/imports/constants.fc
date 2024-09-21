@@ -1,0 +1,2 @@
+int op::deposit() asm "0x47d54391 PUSHINT";
+int op::withdraw() asm "0x41836980 PUSHINT";
