@@ -35,12 +35,16 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
+    "@dedust/sdk": "^0.8.7",
     "@orbs-network/ton-access": "^2.3.3",
+    "@ston-fi/api": "^0.10.0",
+    "@ston-fi/sdk": "^1.2.0",
     "@ton-community/sandbox": "^0.11.0",
     "@ton-community/test-utils": "^0.3.0",
     "@ton/crypto": "^3.3.0",
     "dotenv": "^16.4.5",
     "ton-core": "^0.53.0",
-    "tonweb": "^0.0.66"
+    "tonweb": "^0.0.66",
+    "tonweb-mnemonic": "^1.0.1"
   }
 }
