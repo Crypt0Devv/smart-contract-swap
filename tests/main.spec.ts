@@ -1,4 +1,4 @@
-import { Cell, toNano } from 'ton-core';
+import { toNano } from 'ton-core';
 import {
   Blockchain,
   SandboxContract,
@@ -147,8 +147,6 @@ describe('main.fc contract tests', () => {
 
   it('succeeds to change admin address when requested by owner ', async () => {
     const newAdmin = await blockchain.treasury('sender');
-    console.log('newAdmin.address', newAdmin.address);
-    console.log('ownerWallet.address', ownerWallet.address);
 
     const withdrawalRequestResult = await myContract.sendChangeAdminRequest(
       ownerWallet.getSender(),

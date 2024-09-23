@@ -12,7 +12,7 @@ const contractAddress = Address.parse(
 
 async function testChangeAdmin() {
   const newAdminAddress = Address.parse(
-    '0QBYkHRh558Wkc60BUr5HNKCKNAz0c5YZcvU2C4-iibmf4Kj'
+    '0QB0EAt3rwr8mFphwnVEgCY3lGAHXiID2nrqxe9DKpd5Xpmt'
   );
 
   const payload = beginCell()

@@ -1,18 +1,10 @@
 #include "imports/stdlib.fc";
 
-;;
-;; Common
-;;
-
 const int msg_flag::bounceable = 0x18;
 
 builder store_zeros(builder b, int n) asm "STZEROES";
 
 slice addr_none() asm "b{00} PUSHSLICE";
-
-;;
-;; DEX
-;;
 
 const slice TON_VAULT_ADDR = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_"a;
 
@@ -20,7 +12,7 @@ const slice TON_VAULT_ADDR = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_"a
 const slice RECIPIENT_ADDR = "EQDz0wQL6EEdgbPkFgS7nNmywzr468AvgLyhH7PIMALxPB6G"a;
 
 ;; Can be taken from DeDust.io: https://dedust.io/earn/<pool_addr>
-const slice TON_SCALE_POOL_ADDR = "EQDcm06RlreuMurm-yik9WbL6kI617B77OrSRF_ZjoCYFuny"a;
+const slice TON_TSWAP_POOL_ADDR = "EQCSIiae_6OWjSwdBqi30AhFteOmXqqYam-ipDbYq6LR498r"a;
 
 const int MIN_BALANCE = 100000000; ;; 0.1 TON
 const int MIN_TRADE_AMOUNT = 1000000000; ;; 1 TON

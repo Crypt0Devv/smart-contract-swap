@@ -9,6 +9,7 @@ import {
   SendMode,
 } from 'ton-core';
 import { op } from '../utils/constants';
+import { toNano } from '@ton/ton';
 
 export type MainContractConfig = {
   address: Address;

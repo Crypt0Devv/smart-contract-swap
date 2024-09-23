@@ -7,7 +7,8 @@
     "test": "node --no-deprecation node_modules/.bin/jest",
     "onchaintest:testnet:withdraw": "TESTNET=true ts-node ./scripts/onchaintest-withdraw.ts",
     "onchaintest:testnet:deposit": "TESTNET=true ts-node ./scripts/onchaintest-deposit.ts",
-    "onchaintest:testnet:changeadmin": "TESTNET=true ts-node ./scripts/onchaintest-changeadmin.ts"
+    "onchaintest:testnet:changeadmin": "TESTNET=true ts-node ./scripts/onchaintest-changeadmin.ts",
+    "onchaintest:testnet:swapdedust": "TESTNET=true ts-node ./scripts/onchaintest-swap-dedust.ts"
   },
   "devDependencies": {
     "@swc/core": "^1.7.26",
@@ -38,6 +39,7 @@
     "@ton-community/test-utils": "^0.3.0",
     "@ton/crypto": "^3.3.0",
     "dotenv": "^16.4.5",
-    "ton-core": "^0.53.0"
+    "ton-core": "^0.53.0",
+    "tonweb": "^0.0.66"
   }
 }
