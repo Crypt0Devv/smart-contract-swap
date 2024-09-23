@@ -5,6 +5,7 @@ import {
   TonClient4,
   WalletContractV4,
   WalletContractV3R2,
+  TonClient,
 } from '@ton/ton';
 import {
   Asset,
@@ -25,8 +26,9 @@ const TSWAP_ADDR = Address.parse(
 );
 async function createSender() {
   // Connect to the TON blockchain
-  const tonClient = new TonClient4({
-    endpoint: 'https://mainnet-v4.tonhubapi.com',
+  const tonClient = new TonClient({
+    endpoint: 'https://toncenter.com/api/v2/jsonRPC',
+    apiKey: '7cb1d456aefc2afcfa6cc7f19c6dfe025b93e0b6946e39afb9f89fd5f6451f23',
   });
 
   const mnemonic = process.env.DEV_WALLET_MNEMONIC;
@@ -36,16 +38,15 @@ async function createSender() {
   const keys = await mnemonicToPrivateKey(mnemonic?.split(' ') ?? ['']);
   // Create a wallet contract
   const wallet = tonClient.open(
-    WalletContractV3R2.create({
+    WalletContractV4.create({
       workchain: 0,
       publicKey: keys.publicKey,
     })
   );
-
   // Open the wallet contract
   const sender = wallet.sender(keys.secretKey);
 
-  return sender;
+  return { sender, wallet };
 }
 
 function createAxiosInstance(): any {
@@ -58,18 +59,16 @@ function createAxiosInstance(): any {
 }
 
 async function main() {
-  const axiosInstance = createAxiosInstance();
-  const tonClient = new TonClient4({
-    endpoint: 'https://mainnet-v4.tonhubapi.com',
-    timeout: 100000000,
-    httpAdapter: createAxiosInstance().config,
+  const tonClient = new TonClient({
+    endpoint: 'https://toncenter.com/api/v2/jsonRPC',
+    apiKey: '7cb1d456aefc2afcfa6cc7f19c6dfe025b93e0b6946e39afb9f89fd5f6451f23',
   });
 
   /**
    * STEP 1. Find all necessary contracts.
    */
 
-  const sender: Sender = await createSender();
+  const { sender, wallet } = await createSender();
   const factory = tonClient.open(
     Factory.createFromAddress(MAINNET_FACTORY_ADDR)
   );
@@ -90,26 +89,7 @@ async function main() {
     VaultNative.createFromAddress(await factory.getVaultAddress(Asset.native()))
   );
 
-  const lastBlock = await tonClient.getLastBlock();
-  const poolState = await tonClient.getAccountLite(
-    lastBlock.last.seqno,
-    pool.address
-  );
-
-  if (poolState.account.state.type !== 'active') {
-    throw new Error('Pool is not exist.');
-  }
-
-  const vaultState = await tonClient.getAccountLite(
-    lastBlock.last.seqno,
-    nativeVault.address
-  );
-
-  if (vaultState.account.state.type !== 'active') {
-    throw new Error('Native Vault is not exist.');
-  }
-
-  const amountIn = toNano('1'); // 1 TON
+  const amountIn = toNano('0.5'); // 1 TON
 
   //   const res = await pool.getEstimatedSwapOut({
   const { amountOut: expectedAmountOut } = await pool.getEstimatedSwapOut({

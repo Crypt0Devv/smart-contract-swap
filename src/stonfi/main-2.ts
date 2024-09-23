@@ -30,14 +30,14 @@ async function main() {
 
   const router = client.open(new DEX.v1.Router());
   // swap 1 TON to STON but not less than 1 nano STON
-  const txParams = await router.getSwapTonToJettonTxParams({
-    userWalletAddress: 'UQAftMOLnzvupKs6sDsZL3pLnPps8Aj40G53tZ8ZzztaPCP_', // ! replace with your address
-    proxyTon: new pTON.v1(),
-    offerAmount: toNano('0.3'),
-    askJettonAddress: 'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO', // STON
-    minAskAmount: '1',
-    queryId: 12345,
-  });
+  //   const txParams = await router.getSwapTonToJettonTxParams({
+  //     userWalletAddress: 'UQAftMOLnzvupKs6sDsZL3pLnPps8Aj40G53tZ8ZzztaPCP_', // ! replace with your address
+  //     proxyTon: new pTON.v1(),
+  //     offerAmount: toNano('0.3'),
+  //     askJettonAddress: 'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO', // STON
+  //     minAskAmount: '1',
+  //     queryId: 12345,
+  //   });
   const txArgs = {
     offerAmount: toNano('0.5'),
     askJettonAddress: 'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
