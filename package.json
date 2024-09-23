@@ -8,7 +8,8 @@
     "onchaintest:testnet:withdraw": "TESTNET=true ts-node ./scripts/onchaintest-withdraw.ts",
     "onchaintest:testnet:deposit": "TESTNET=true ts-node ./scripts/onchaintest-deposit.ts",
     "onchaintest:testnet:changeadmin": "TESTNET=true ts-node ./scripts/onchaintest-changeadmin.ts",
-    "onchaintest:testnet:swapdedust": "TESTNET=true ts-node ./scripts/onchaintest-swap-dedust.ts"
+    "onchaintest:testnet:swapdedust": "TESTNET=true ts-node ./scripts/onchaintest-swap-dedust.ts",
+    "onchaintest:testnet:swapstonfi": "TESTNET=true ts-node ./scripts/onchaintest-swap-stonfi.ts"
   },
   "devDependencies": {
     "@swc/core": "^1.7.26",
