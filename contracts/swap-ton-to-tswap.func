@@ -9,7 +9,7 @@ slice addr_none() asm "b{00} PUSHSLICE";
 const slice TON_VAULT_ADDR = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_"a;
 
 ;; Where to send bought jettons?
-const slice RECIPIENT_ADDR = "EQDz0wQL6EEdgbPkFgS7nNmywzr468AvgLyhH7PIMALxPB6G"a;
+const slice RECIPIENT_ADDR = "EQDz0wQL6EEdgbPkFgS7nNmywzr468AvgLyhH7PIMALxPB6G"a
 
 ;; Can be taken from DeDust.io: https://dedust.io/earn/<pool_addr>
 const slice TON_TSWAP_POOL_ADDR = "EQCSIiae_6OWjSwdBqi30AhFteOmXqqYam-ipDbYq6LR498r"a;
