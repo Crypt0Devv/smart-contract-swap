@@ -28,7 +28,7 @@ async function createSender() {
   // Connect to the TON blockchain
   const tonClient = new TonClient({
     endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-    apiKey: '7cb1d456aefc2afcfa6cc7f19c6dfe025b93e0b6946e39afb9f89fd5f6451f23',
+    apiKey: process.env.TON_API_KEY,
   });
 
   const mnemonic = process.env.DEV_WALLET_MNEMONIC;
@@ -61,7 +61,7 @@ function createAxiosInstance(): any {
 async function main() {
   const tonClient = new TonClient({
     endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-    apiKey: '7cb1d456aefc2afcfa6cc7f19c6dfe025b93e0b6946e39afb9f89fd5f6451f23',
+    apiKey: process.env.TON_API_KEY,
   });
 
   /**
